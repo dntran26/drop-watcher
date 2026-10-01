@@ -13,6 +13,7 @@ Watches for restocks and drops and pushes them to my phone through ntfy.
 | `engine.yml` | every 5 min | `npm run watch`, then `npm run drops` |
 | `feeds.yml` | every 30 min | `npm run feeds` |
 | `keepalive.yml` | weekly | stops GitHub disabling the schedules after 60 quiet days |
+| `probe.yml` | manual | reads every source from GitHub's network, no writes |
 
 GitHub's cron can start a few minutes late, so a 2-minute sellout can still be missed.
 
@@ -39,4 +40,6 @@ Without `NTFY_TOPIC` set, alerts print to the console instead of sending.
 
 ## Sources that don't work
 
-EB Games, Pokemon Center CA and London Drugs return 403. Costco serves a bot check. Facebook groups and Discord have no legitimate access. Best Buy's Pokemon listings are almost all marketplace resellers, which are filtered out.
+From GitHub's (US) servers: Walmart answers only some of the time (treated as best effort, failures stay quiet), and dysoncanada.ca blocks outright, so watch Dyson products through Best Buy instead. Shopify stores are asked for the Canadian catalog (`country=CA`), since some hide products from US visitors.
+
+Everywhere: EB Games, Pokemon Center CA and London Drugs return 403. Costco serves a bot check. Facebook groups and Discord have no legitimate access. Best Buy's Pokemon listings are almost all marketplace resellers, which are filtered out.

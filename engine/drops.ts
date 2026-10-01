@@ -18,6 +18,8 @@ interface DropSource {
   /** Full catalog: an item missing from the fetch is sold out. Search results: missing means nothing. */
   full: boolean;
   fetch: () => Promise<Listing[]>;
+  /** Blocks GitHub's servers some of the time: use it when it answers, never alert on its failures. */
+  bestEffort?: boolean;
 }
 
 const SOURCES: DropSource[] = [
@@ -28,7 +30,7 @@ const SOURCES: DropSource[] = [
     full: true,
     fetch: () => shopify.catalog(s),
   })),
-  { key: "walmart", name: "Walmart", home: "https://www.walmart.ca", full: false, fetch: () => walmart.search("pokemon trading card") },
+  { key: "walmart", name: "Walmart", home: "https://www.walmart.ca", full: false, bestEffort: true, fetch: () => walmart.search("pokemon trading card") },
   { key: "bestbuy", name: "Best Buy", home: "https://www.bestbuy.ca", full: false, fetch: () => bestbuy.search("pokemon tcg", 100) },
 ];
 
@@ -132,7 +134,7 @@ async function main() {
       await recordHealth(sb, src.name, null);
     } catch (e) {
       console.log(`FAIL ${src.key}: ${(e as Error).message}`);
-      await recordHealth(sb, src.name, e as Error);
+      await recordHealth(sb, src.name, e as Error, src.bestEffort);
     }
   }
 }
