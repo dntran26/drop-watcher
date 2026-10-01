@@ -1,5 +1,5 @@
 import { XMLParser } from "fast-xml-parser";
-import { getText } from "../http";
+import { FEED_ACCEPT, getText } from "../http";
 import type { FeedItem } from "../types";
 
 export interface FeedEntry {
@@ -87,7 +87,9 @@ const decode = (s: string) =>
 
 /** RSS 2.0 or Atom. */
 export async function read(url: string): Promise<FeedEntry[]> {
-  const doc = parser.parse(await getText(url));
+  // An HTML Accept header gets some feeds (Hypebeast) to serve an empty bot check instead.
+  const doc = parser.parse(await getText(url, { accept: FEED_ACCEPT }));
+  if (!doc.rss?.channel && !doc.feed) throw new Error("Response wasn't a feed (likely a bot check)");
   const rss = doc.rss?.channel?.item;
   const atom = doc.feed?.entry;
   const items: any[] = [].concat(rss ?? atom ?? []);

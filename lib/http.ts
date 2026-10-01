@@ -46,7 +46,7 @@ async function getBody(url: string, accept: string, timeoutMs = 20000): Promise<
   try {
     return await fetchText(url, accept, timeoutMs);
   } catch (e) {
-    if (!(e instanceof HttpError) || ![403, 412, 429].includes(e.status)) throw e;
+    if (!(e instanceof HttpError) || ![403, 406, 412, 429].includes(e.status)) throw e;
     try {
       return await curlText(url, accept, timeoutMs);
     } catch (curlErr) {
@@ -61,8 +61,23 @@ export async function getJson<T>(url: string): Promise<T> {
   return JSON.parse(await getBody(url, "application/json")) as T;
 }
 
-export async function getText(url: string): Promise<string> {
-  return getBody(url, HTML_ACCEPT);
+export const FEED_ACCEPT = "application/rss+xml, application/atom+xml, application/xml;q=0.9, */*;q=0.8";
+
+/**
+ * curlFirst: for sites that answer Node with a 200 bot page rather than an error status
+ * (Walmart from GitHub's network), so the status-based fallback never triggers.
+ */
+export async function getText(url: string, opts: { accept?: string; curlFirst?: boolean } = {}): Promise<string> {
+  const accept = opts.accept ?? HTML_ACCEPT;
+  if (opts.curlFirst) {
+    try {
+      return await curlText(url, accept, 20000);
+    } catch (e) {
+      if (e instanceof HttpError) throw e;
+      // No curl on this host: fall through to fetch.
+    }
+  }
+  return getBody(url, accept);
 }
 
 export function toNumber(v: unknown): number | null {

@@ -49,6 +49,13 @@ export const EDMONTON_SHOPS: Shop[] = [
   { key: "203", name: "203 Collectibles", domain: "203collectibles.com", collections: ["pokemon-sealed-products"] },
 ];
 
+/**
+ * Shopify Markets hides products a store doesn't sell to the visitor's country. GitHub's
+ * servers are in the US, where Taps Games showed 3 of its 78 sealed products; country=CA
+ * restores the Canadian catalog (tested from GitHub's network 2026-10-01).
+ */
+const CA = "country=CA";
+
 function toListing(shop: { name: string; domain: string }, p: ShopifyProduct): Listing {
   const prices = p.variants.map((v) => toNumber(v.price)).filter((n): n is number => n != null);
   return {
@@ -69,7 +76,7 @@ export async function catalog(shop: Shop): Promise<Listing[]> {
   for (const handle of shop.collections) {
     for (let page = 1; page <= 20; page++) {
       const { products } = await getJson<{ products: ShopifyProduct[] }>(
-        `https://${shop.domain}/collections/${handle}/products.json?limit=250&page=${page}`,
+        `https://${shop.domain}/collections/${handle}/products.json?limit=250&page=${page}&${CA}`,
       );
       for (const p of products) seen.set(String(p.id), toListing(shop, p));
       if (products.length < 250) break;
@@ -91,7 +98,7 @@ interface SuggestProduct {
 export async function search(shop: Shop, query: string): Promise<Listing[]> {
   const q = encodeURIComponent(query);
   const data = await getJson<{ resources: { results: { products: SuggestProduct[] } } }>(
-    `https://${shop.domain}/search/suggest.json?q=${q}&resources[type]=product&resources[limit]=10`,
+    `https://${shop.domain}/search/suggest.json?q=${q}&resources[type]=product&resources[limit]=10&${CA}`,
   );
   return data.resources.results.products.map((p) => ({
     id: String(p.id),
@@ -117,7 +124,7 @@ export async function product(url: string): Promise<Listing> {
     available: boolean;
     price: number;
     images: string[];
-  }>(`${u.origin}/products/${handle}.js`);
+  }>(`${u.origin}/products/${handle}.js?${CA}`);
   const shop = EDMONTON_SHOPS.find((s) => u.hostname.endsWith(s.domain));
   const image = p.images?.[0] ?? null;
   return {

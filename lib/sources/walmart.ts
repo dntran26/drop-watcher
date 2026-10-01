@@ -29,7 +29,7 @@ export function shortUrl(urlOrPath: string): string {
 
 /** Walmart-sold items only: marketplace resellers (sellerType EXTERNAL) are filtered out. */
 export async function search(query: string): Promise<Listing[]> {
-  const html = await getText(`${BASE}/en/search?q=${encodeURIComponent(query)}`);
+  const html = await getText(`${BASE}/en/search?q=${encodeURIComponent(query)}`, { curlFirst: true });
   const stacks: { items: WMItem[] }[] = nextData(html)?.props?.pageProps?.initialData?.searchResult?.itemStacks ?? [];
   return stacks
     .flatMap((s) => s.items)
@@ -47,7 +47,7 @@ export async function search(query: string): Promise<Listing[]> {
 }
 
 export async function check(url: string): Promise<StockResult> {
-  const p = nextData(await getText(shortUrl(url)))?.props?.pageProps?.initialData?.data?.product;
+  const p = nextData(await getText(shortUrl(url), { curlFirst: true }))?.props?.pageProps?.initialData?.data?.product;
   if (!p?.availabilityStatus) throw new Error("Walmart product data missing");
   return {
     status: p.availabilityStatus === "IN_STOCK" ? "in" : "out",
