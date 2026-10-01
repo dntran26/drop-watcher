@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any -- parses other sites' untyped JSON/XML */
 import { getText, toNumber } from "../http";
 import type { Listing, StockResult } from "../types";
 

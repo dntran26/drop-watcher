@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any -- parses other sites' untyped JSON/XML */
 import * as cheerio from "cheerio";
 import { getText, toNumber } from "../http";
 import type { StockResult, StockStatus } from "../types";

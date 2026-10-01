@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any -- parses other sites' untyped JSON/XML */
 import { XMLParser } from "fast-xml-parser";
 import { FEED_ACCEPT, getText } from "../http";
 import type { FeedItem } from "../types";

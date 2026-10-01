@@ -47,3 +47,15 @@ export async function checkStock(w: { source: Source; url: string; sku: string |
       return jsonld.check(w.url);
   }
 }
+
+/** No network: which checker a link belongs to, for saving a watch when the first read is blocked. */
+export function classify(raw: string): { source: Source; sku: string | null; store: string; url: string; name: string } {
+  const u = new URL(raw.trim());
+  const host = u.hostname.replace(/^www\./, "");
+  const slug = u.pathname.split("/").filter((s) => s && !/^\d+$/.test(s) && !/^[A-Z0-9]{8,}$/.test(s)).pop() ?? host;
+  const name = decodeURIComponent(slug).replace(/[-_]+/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  if (host === "bestbuy.ca") return { source: "bestbuy", sku: bestbuy.skuFromUrl(u.href), store: "Best Buy", url: u.href, name };
+  if (host === "walmart.ca") return { source: "walmart", sku: null, store: "Walmart", url: walmart.shortUrl(u.href), name };
+  if (u.pathname.includes("/products/")) return { source: "shopify", sku: null, store: host, url: u.href.split("?")[0], name };
+  return { source: "jsonld", sku: null, store: host, url: u.href, name };
+}
