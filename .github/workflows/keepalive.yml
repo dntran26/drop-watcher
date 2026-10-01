@@ -1,0 +1,22 @@
+name: keepalive
+
+# GitHub disables scheduled workflows after 60 days without a commit.
+# Re-enabling them weekly through the API resets that clock without dummy commits.
+on:
+  schedule:
+    - cron: "0 9 * * 1"
+  workflow_dispatch:
+
+permissions:
+  actions: write
+
+jobs:
+  enable:
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for wf in engine.yml feeds.yml keepalive.yml; do
+            gh api -X PUT "repos/${{ github.repository }}/actions/workflows/$wf/enable"
+          done
